@@ -4,11 +4,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Button } from '@/components/ui/button';
-import { MapPin, Loader2 } from 'lucide-react';
 import { FileUpload } from './file-upload';
 import { VendorFormData, VendorFormErrors } from '@/types/vendor';
-import { getBrowserLocation } from '@/lib/geocoding';
 
 interface Step4Props {
   formData: VendorFormData;
@@ -17,34 +14,9 @@ interface Step4Props {
 }
 
 export function Step4Portfolio({ formData, errors, onChange }: Step4Props) {
-  const [isGettingLocation, setIsGettingLocation] = useState(false);
-  
   const bioCharacterCount = formData.bio.length;
   const maxBioLength = 800;
 
-  const handleGetCurrentLocation = async () => {
-    setIsGettingLocation(true);
-    
-    try {
-      const location = await getBrowserLocation();
-      if (location) {
-        // Store the coordinates for later use
-        onChange('latitude', location.latitude);
-        onChange('longitude', location.longitude);
-        
-        // Optionally, you could use reverse geocoding here to fill city/country
-        // For now, we'll just show a success message
-        alert('Location captured successfully! Please still fill in your city and country.');
-      } else {
-        alert('Unable to get your location. Please enter your city and country manually.');
-      }
-    } catch (error) {
-      console.error('Error getting location:', error);
-      alert('Error getting location. Please enter your city and country manually.');
-    } finally {
-      setIsGettingLocation(false);
-    }
-  };
   return (
     <div className="space-y-8">
       <div className="text-center mb-8">
@@ -53,27 +25,7 @@ export function Step4Portfolio({ formData, errors, onChange }: Step4Props) {
       </div>
 
       {/* Location */}
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">Location Information</h3>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={handleGetCurrentLocation}
-            disabled={isGettingLocation}
-            className="flex items-center gap-2"
-          >
-            {isGettingLocation ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <MapPin className="w-4 h-4" />
-            )}
-            {isGettingLocation ? 'Getting Location...' : 'Use Current Location'}
-          </Button>
-        </div>
-        
-        <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <Label htmlFor="city" className="text-sm font-medium text-gray-700">
             City <span className="text-red-500">*</span>
@@ -110,7 +62,6 @@ export function Step4Portfolio({ formData, errors, onChange }: Step4Props) {
           {errors.country && (
             <p className="text-sm text-red-500 mt-1">{errors.country}</p>
           )}
-        </div>
         </div>
       </div>
 

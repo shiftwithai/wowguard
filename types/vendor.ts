@@ -20,8 +20,6 @@ export interface VendorFormData {
   // Step 4: Location & Portfolio
   city: string;
   country: string;
-  latitude: number | null;
-  longitude: number | null;
   charges_travel_fee: boolean;
   available_worldwide: boolean;
   portfolio_images: File[];

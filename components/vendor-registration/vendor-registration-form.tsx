@@ -12,6 +12,7 @@ import { Step4Portfolio } from './step-4-portfolio';
 import { VendorFormData, VendorFormErrors } from '@/types/vendor';
 import { supabase } from '@/lib/supabase';
 import { uploadFile, uploadMultipleFiles } from '@/lib/storage';
+import { geocodeAddress } from '@/lib/geocoding';
 
 const initialFormData: VendorFormData = {
   full_name: '',
@@ -28,8 +29,6 @@ const initialFormData: VendorFormData = {
   max_price: null,
   city: '',
   country: '',
-  latitude: null,
-  longitude: null,
   charges_travel_fee: false,
   available_worldwide: false,
   portfolio_images: [],
@@ -152,6 +151,8 @@ export function VendorRegistrationForm() {
       const coverPhotoUrl = formData.cover_photo ? await uploadFile(formData.cover_photo, 'covers') : null;
       const introVideoUrl = formData.intro_video ? await uploadFile(formData.intro_video, 'videos') : null;
 
+      // Get coordinates
+      const coordinates = await geocodeAddress(formData.city, formData.country);
 
       // Prepare data for insertion
       const vendorData = {
@@ -169,8 +170,8 @@ export function VendorRegistrationForm() {
         max_price: formData.max_price,
         city: formData.city,
         country: formData.country,
-        latitude: formData.latitude,
-        longitude: formData.longitude,
+        latitude: coordinates?.latitude || null,
+        longitude: coordinates?.longitude || null,
         charges_travel_fee: formData.charges_travel_fee,
         available_worldwide: formData.available_worldwide,
         portfolio_images: portfolioUrls,

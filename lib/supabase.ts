@@ -1,30 +1,9 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Get API keys from localStorage or environment variables
-const getSupabaseConfig = () => {
-  if (typeof window !== 'undefined') {
-    const savedKeys = localStorage.getItem('vowguard-api-keys');
-    if (savedKeys) {
-      try {
-        const parsed = JSON.parse(savedKeys);
-        return {
-          url: parsed.supabaseUrl,
-          key: parsed.supabaseAnonKey
-        };
-      } catch (error) {
-        console.error('Error parsing saved API keys:', error);
-      }
-    }
-  }
-  
-  return {
-    url: process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-    key: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-  };
-};
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-const config = getSupabaseConfig();
-export const supabase = createClient(config.url, config.key);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export type Database = {
   public: {
