@@ -130,10 +130,20 @@ export function VendorRegistrationForm() {
       return;
     }
 
+    // Check if Supabase is configured
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      setErrors({ submit: 'Database connection not configured. Please contact support.' });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
       // Check for duplicate email
+      if (!supabase) {
+        throw new Error('Database connection not available');
+      }
+
       const { data: existingVendor } = await supabase
         .from('vendors')
         .select('id')
@@ -198,7 +208,19 @@ export function VendorRegistrationForm() {
 
     } catch (error) {
       console.error('Submission error:', error);
-      setErrors({ submit: 'An error occurred while submitting your registration. Please try again.' });
+      
+      // More specific error messages
+      if (error instanceof Error) {
+        if (error.message.includes('Invalid API key')) {
+          setErrors({ submit: 'Database connection error. Please contact support.' });
+        } else if (error.message.includes('Network')) {
+          setErrors({ submit: 'Network error. Please check your connection and try again.' });
+        } else {
+          setErrors({ submit: `Submission error: ${error.message}` });
+        }
+      } else {
+        setErrors({ submit: 'An unexpected error occurred. Please try again or contact support.' });
+      }
     } finally {
       setIsSubmitting(false);
     }

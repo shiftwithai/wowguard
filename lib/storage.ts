@@ -2,6 +2,11 @@ import { supabase } from './supabase';
 
 export async function uploadFile(file: File, path: string): Promise<string | null> {
   try {
+    if (!supabase) {
+      console.error('Supabase not configured');
+      return null;
+    }
+
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
     const filePath = `${path}/${fileName}`;
