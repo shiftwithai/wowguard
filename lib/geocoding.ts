@@ -3,49 +3,38 @@ export interface GeocodeResult {
   longitude: number;
 }
 
-export async function geocodeAddress(city: string, country: string): Promise<GeocodeResult | null> {
-  try {
-    const query = encodeURIComponent(`${city}, ${country}`);
-    
-    // Get API key from localStorage or environment variables
-    let apiKey = 'demo_key';
-    if (typeof window !== 'undefined') {
-      const savedKeys = localStorage.getItem('vowguard-api-keys');
-      if (savedKeys) {
-        try {
-          const parsed = JSON.parse(savedKeys);
-          apiKey = parsed.opencageApiKey || 'demo_key';
-        } catch (error) {
-          console.error('Error parsing saved API keys:', error);
-        }
+export async function getBrowserLocation(): Promise<GeocodeResult | null> {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      console.warn('Geolocation is not supported by this browser');
+      resolve(null);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        resolve({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+      },
+      (error) => {
+        console.warn('Error getting location:', error.message);
+        resolve(null);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000 // 5 minutes
       }
-    }
-    
-    if (!apiKey || apiKey === 'demo_key') {
-      apiKey = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY || 'demo_key';
-    }
-    
-    const response = await fetch(
-      `https://api.opencagedata.com/geocode/v1/json?q=${query}&key=${apiKey}&limit=1`
     );
-    
-    if (!response.ok) {
-      throw new Error('Geocoding request failed');
-    }
-    
-    const data = await response.json();
-    
-    if (data.results && data.results.length > 0) {
-      const result = data.results[0];
-      return {
-        latitude: result.geometry.lat,
-        longitude: result.geometry.lng,
-      };
-    }
-    
-    return null;
-  } catch (error) {
-    console.error('Geocoding error:', error);
-    return null;
-  }
+  });
+}
+
+// Fallback function that returns null - we'll rely on city/country text only
+export async function geocodeAddress(city: string, country: string): Promise<GeocodeResult | null> {
+  console.log(`Location entered: ${city}, ${country}`);
+  // We'll store the city/country as text and not convert to coordinates
+  // This removes the dependency on external geocoding services
+  return null;
 }

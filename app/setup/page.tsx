@@ -12,24 +12,20 @@ import { Check, AlertCircle, Key, Database, MapPin, Camera } from 'lucide-react'
 interface ApiKeys {
   supabaseUrl: string;
   supabaseAnonKey: string;
-  opencageApiKey: string;
 }
 
 interface ConnectionStatus {
   supabase: 'checking' | 'connected' | 'error' | 'not-configured';
-  geocoding: 'checking' | 'connected' | 'error' | 'not-configured';
 }
 
 export default function SetupPage() {
   const [apiKeys, setApiKeys] = useState<ApiKeys>({
     supabaseUrl: '',
-    supabaseAnonKey: '',
-    opencageApiKey: ''
+    supabaseAnonKey: ''
   });
   
   const [status, setStatus] = useState<ConnectionStatus>({
-    supabase: 'not-configured',
-    geocoding: 'not-configured'
+    supabase: 'not-configured'
   });
   
   const [isSaving, setIsSaving] = useState(false);
@@ -66,35 +62,16 @@ export default function SetupPage() {
     }
   };
 
-  const testGeocodingConnection = async (key: string) => {
-    if (!key) return 'not-configured';
-    
-    try {
-      const response = await fetch(
-        `https://api.opencagedata.com/geocode/v1/json?q=test&key=${key}&limit=1`
-      );
-      
-      const data = await response.json();
-      return response.ok && !data.error ? 'connected' : 'error';
-    } catch (error) {
-      return 'error';
-    }
-  };
 
   const testConnections = async (keys: ApiKeys) => {
     setStatus({
-      supabase: 'checking',
-      geocoding: 'checking'
+      supabase: 'checking'
     });
 
-    const [supabaseStatus, geocodingStatus] = await Promise.all([
-      testSupabaseConnection(keys.supabaseUrl, keys.supabaseAnonKey),
-      testGeocodingConnection(keys.opencageApiKey)
-    ]);
+    const supabaseStatus = await testSupabaseConnection(keys.supabaseUrl, keys.supabaseAnonKey);
 
     setStatus({
-      supabase: supabaseStatus,
-      geocoding: geocodingStatus
+      supabase: supabaseStatus
     });
   };
 
@@ -154,7 +131,7 @@ export default function SetupPage() {
     }
   };
 
-  const allConnected = status.supabase === 'connected' && status.geocoding === 'connected';
+  const allConnected = status.supabase === 'connected';
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] py-8 px-4">
@@ -168,7 +145,7 @@ export default function SetupPage() {
           <Alert className="mb-6 border-green-200 bg-green-50">
             <Check className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800">
-              All services are connected! Your VowGuard application is ready to use.
+              Supabase is connected! Your VowGuard application is ready to use.
             </AlertDescription>
           </Alert>
         )}
@@ -212,30 +189,20 @@ export default function SetupPage() {
             </CardContent>
           </Card>
 
-          {/* Geocoding Configuration */}
+          {/* Location Information */}
           <Card className="shadow-lg border-0">
             <CardHeader>
               <CardTitle className="flex items-center gap-3">
                 <MapPin className="w-6 h-6 text-[#163300]" />
-                Geocoding Service (OpenCage)
-                {getStatusBadge(status.geocoding)}
+                Location Services
+                <Badge className="bg-green-100 text-green-800 border-green-200">Browser-Based</Badge>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="opencage-key">OpenCage API Key</Label>
-                <Input
-                  id="opencage-key"
-                  type="password"
-                  placeholder="your-opencage-api-key"
-                  value={apiKeys.opencageApiKey}
-                  onChange={(e) => handleInputChange('opencageApiKey', e.target.value)}
-                  className="focus:ring-[#163300] focus:border-[#163300]"
-                />
-              </div>
               <div className="text-sm text-gray-600">
-                <p>Get a free API key at <a href="https://opencagedata.com" target="_blank" rel="noopener noreferrer" className="text-[#163300] hover:underline">opencagedata.com</a></p>
-                <p>Free tier includes 2,500 requests per day</p>
+                <p>✅ Location services use your browser's built-in geolocation API</p>
+                <p>✅ No external API keys required</p>
+                <p>✅ Vendors can optionally share their precise location for better matching</p>
               </div>
             </CardContent>
           </Card>
@@ -259,10 +226,10 @@ export default function SetupPage() {
                 </div>
                 <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div className="flex items-center gap-3">
-                    {getStatusIcon(status.geocoding)}
-                    <span className="font-medium">Geocoding Service</span>
+                    <Check className="w-4 h-4 text-green-600" />
+                    <span className="font-medium">Browser Geolocation</span>
                   </div>
-                  {getStatusBadge(status.geocoding)}
+                  <Badge className="bg-green-100 text-green-800 border-green-200">Ready</Badge>
                 </div>
               </div>
             </CardContent>
@@ -313,7 +280,7 @@ export default function SetupPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-700 mb-4">
-                  Your VowGuard application is now configured and ready to use. Here's what you can do next:
+                  Your VowGuard application is configured and ready! Here's what you can do next:
                 </p>
                 <ul className="space-y-2 text-sm text-gray-600">
                   <li className="flex items-center gap-2">
@@ -327,6 +294,10 @@ export default function SetupPage() {
                   <li className="flex items-center gap-2">
                     <Check className="w-4 h-4 text-green-600" />
                     Check your Supabase dashboard for new vendor entries
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check className="w-4 h-4 text-green-600" />
+                    Vendors can optionally share their location using browser geolocation
                   </li>
                 </ul>
               </CardContent>
