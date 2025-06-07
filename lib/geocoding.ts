@@ -6,7 +6,24 @@ export interface GeocodeResult {
 export async function geocodeAddress(city: string, country: string): Promise<GeocodeResult | null> {
   try {
     const query = encodeURIComponent(`${city}, ${country}`);
-    const apiKey = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY || 'demo_key';
+    
+    // Get API key from localStorage or environment variables
+    let apiKey = 'demo_key';
+    if (typeof window !== 'undefined') {
+      const savedKeys = localStorage.getItem('vowguard-api-keys');
+      if (savedKeys) {
+        try {
+          const parsed = JSON.parse(savedKeys);
+          apiKey = parsed.opencageApiKey || 'demo_key';
+        } catch (error) {
+          console.error('Error parsing saved API keys:', error);
+        }
+      }
+    }
+    
+    if (!apiKey || apiKey === 'demo_key') {
+      apiKey = process.env.NEXT_PUBLIC_OPENCAGE_API_KEY || 'demo_key';
+    }
     
     const response = await fetch(
       `https://api.opencagedata.com/geocode/v1/json?q=${query}&key=${apiKey}&limit=1`

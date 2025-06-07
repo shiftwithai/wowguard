@@ -61,7 +61,7 @@ export function Footer() {
                   {footerLinks.product.map((link) => (
                     <li key={link.name}>
                       <Link 
-                        href={link.href}
+                        href={link.name === 'For Photographers' ? '/vendor-registration' : link.href}
                         className="text-gray-400 hover:text-white transition-colors duration-300"
                       >
                         {link.name}
